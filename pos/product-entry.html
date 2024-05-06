@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Entry</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #1976D2;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .form-container {
+            margin: 20px auto;
+            max-width: 550px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .variant-table th,
+        .variant-table td {
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .variant-table th {
+            background-color: #f2f2f2;
+        }
+        .remove-variant {
+            cursor: pointer;
+            color: #dc3545;
+        }
+        .preview-image {
+            max-width: 150px;
+            max-height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Product Entry</div>
+        <div class="form-container">
+            <form id="productEntryForm">
+                <div class="form-group">
+                    <label for="productName">Product Name:</label>
+                    <input type="text" class="form-control" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label for="productSku">SKU:</label>
+                    <input type="text" class="form-control" id="productSku" required>
+                </div>
+                <div class="form-group">
+                    <label for="productUnit">Unit:</label>
+                    <input type="text" class="form-control" id="productUnit" required>
+                </div>
+                <div class="form-group">
+                    <label for="productUnitValue">Unit Value:</label>
+                    <input type="number" class="form-control" id="productUnitValue" required step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="productSellingPrice">Selling Price:</label>
+                    <input type="number" class="form-control" id="productSellingPrice" required step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="productPurchasePrice">Purchase Price:</label>
+                    <input type="number" class="form-control" id="productPurchasePrice" required step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="productTax">Tax:</label>
+                    <input type="number" class="form-control" id="productTax" required step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Product Image:</label>
+                    <input type="file" class="form-control-file" id="productImage" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="hasVariants" class="form-check-input">
+                    <label for="hasVariants" class="form-check-label">Has Variants</label>
+                </div>
+                <div id="variantSection" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table variant-table">
+                            <thead>
+                                <tr>
+                                    <th>Color</th>
+                                    <th>Size</th>
+                                    <th>Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="variantInputs">
+                                <tr class="variant-input">
+                                    <td>
+                                        <select class="form-control variant-color" name="variantColor[]" required>
+                                            <option value="">Select Color</option>
+                                            <option value="Red">Red</option>
+                                            <option value="Blue">Blue</option>
+                                            <option value="Green">Green</option>
+                                            <!-- Add more options as needed -->
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-control variant-size" name="variantSize[]" required>
+                                            <option value="">Select Size</option>
+                                            <option value="Small">Small</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="Large">Large</option>
+                                            <!-- Add more options as needed -->
+                                        </select>
+                                    </td>
+                                    <td><input type="number" class="form-control" name="productPrice[]" required step="0.01"></td>
+                                    <td><i class="fas fa-times remove-variant"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right">
+                        <span class="add-variant">+ Add Variant</span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Product</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#hasVariants').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#variantSection').show();
+                    $('.variant-color').attr('required', 'required');
+                    $('.variant-size').attr('required', 'required');
+                } else {
+                    $('#variantSection').hide();
+                    $('.variant-color').removeAttr('required');
+                    $('.variant-size').removeAttr('required');
+                }
+            });
+
+            // Add variant input fields
+            $('.add-variant').click(function() {
+                $('#variantInputs').append(`
+                    <tr class="variant-input">
+                        <td>
+                            <select class="form-control variant-color" name="variantColor[]" required>
+                                <option value="">Select Color</option>
+                                <option value="Red">Red</option>
+                                <option value="Blue">Blue</option>
+                                <option value="Green">Green</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-control variant-size" name="variantSize[]" required>
+                                <option value="">Select Size</option>
+                                <option value="Small">Small</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Large">Large</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                        </td>
+                        <td><input type="number" class="form-control" name="productPrice[]" required step="0.01"></td>
+                        <td><i class="fas fa-times remove-variant"></i></td>
+                    </tr>
+                `);
+            });
+
+            // Remove variant input row
+            $('body').on('click', '.remove-variant', function() {
+                $(this).closest('tr').remove();
+            });
+
+            // Product Entry Form Submission
+            $('#productEntryForm').on('submit', function(event) {
+                event.preventDefault();
+
+                const productName = $('#productName').val();
+                const productSku = $('#productSku').val();
+                const productUnit = $('#productUnit').val();
+                const productUnitValue = $('#productUnitValue').val();
+                const productSellingPrice = $('#productSellingPrice').val();
+                const productPurchasePrice = $('#productPurchasePrice').val();
+                const productTax = $('#productTax').val();
+                const productImage = $('#productImage').val(); // You can get the image file here
+
+                const variantColors = $('select.variant-color').map(function(){return $(this).val();}).get();
+                const variantSizes = $('select.variant-size').map(function(){return $(this).val();}).get();
+                const variantPrices = $('input[name="productPrice[]"]').map(function(){return $(this).val();}).get();
+
+                // Validate product name, SKU, unit, unit value, selling price, purchase price, discount, tax, image, and at least one variant
+                if (productName && productSku && productUnit && productUnitValue && productSellingPrice && productPurchasePrice && productTax && productImage && (!variantColors.length || (variantColors.length === variantSizes.length && variantSizes.length === variantPrices.length))) {
+                    // Check for duplicate variants
+                    const duplicates = variantColors.some((color, index) => variantColors.indexOf(color) !== index || variantSizes.indexOf(variantSizes[index]) !== index);
+                    if (duplicates) {
+                        alert('Duplicate variants are not allowed.');
+                        return;
+                    }
+
+                    // You can handle form submission here, like sending data to a server or storing it locally
+                    alert('Product added successfully!');
+                    // Clear form fields after submission
+                    $('#productName').val('');
+                    $('#productSku').val('');
+                    $('#productUnit').val('');
+                    $('#productUnitValue').val('');
+                    $('#productSellingPrice').val('');
+                    $('#productPurchasePrice').val('');
+                    $('#productTax').val('');
+                    $('#productImage').val('');
+                    $('select.variant-color').val('');
+                    $('select.variant-size').val('');
+                    $('input[name="productPrice[]"]').val('');
+                } else {
+                    alert('Please fill out all fields correctly.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
