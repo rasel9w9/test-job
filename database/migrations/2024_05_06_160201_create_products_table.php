@@ -18,6 +18,7 @@ class CreateProductsTable extends Migration
             $table->string("name",100);
             $table->string("sku",50);
             $table->string("unit",50);
+            $table->string("image",50)->nullable();
             $table->integer("unit_value");
             $table->integer("selling_price");
             $table->integer("purchase_price");

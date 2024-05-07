@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Point of Sale</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,6 +26,16 @@
         }
         .sidebar-heading {
             padding: 10px 20px;
+        }
+        .logout-btn {
+            color: #fff;
+            border: none;
+            background: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            text-decoration: underline;
         }
         .menu-item {
             padding: 10px 20px;
@@ -144,7 +154,10 @@
                 </ul>
             </div>
             <div class="col-md-10 content">
-                <div class="header">Point of Sale</div>
+                <div class="header">
+                    Point of Sale
+                    <button class="logout-btn float-right"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="products">
@@ -153,17 +166,17 @@
                             </div>
                             <h2 style="margin-bottom: 20px;">Products List</h2>
                             <ul class="product-list">
-                                <li data-name="Product 1" data-price="10.00" data-discount="2.00">
+                                <li data-name="Product 1" data-color="Red" data-size="Small" data-price="10.00" data-discount="2.00">
                                     <div class="product-info">
                                         <img src="https://via.placeholder.com/60" alt="Product 1" class="product-image">
                                         <div class="product-details">
-                                            <div class="product-name">Product 1</div>
+                                            <div class="product-name">Product 1 (Red, Small)</div>
                                             <div class="product-price">$10.00</div>
                                             <div class="product-discount">Discount: $2.00</div>
                                         </div>
                                     </div>
                                 </li>
-                                <!-- Add more products with their prices and discounts here -->
+                                <!-- Add more products with their variants and prices here -->
                             </ul>
                         </div>
                     </div>
@@ -206,6 +219,7 @@
         </div>
     </footer>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#productSearch').on('input', function() {
@@ -233,16 +247,20 @@
             productList.on('click', function() {
                 const name = $(this).data('name');
                 const price = parseFloat($(this).data('price'));
+                const color = $(this).data('color');
+                const size = $(this).data('size');
                 const discount = parseFloat($(this).data('discount'));
 
-                if (!items[name]) {
-                    items[name] = {
+                const variantName = `${name} (${color}, ${size})`;
+
+                if (!items[variantName]) {
+                    items[variantName] = {
                         price: price,
                         quantity: 1,
                         discount: discount
                     };
                 } else {
-                    items[name].quantity++;
+                    items[variantName].quantity++;
                 }
 
                 updateOrderSummary();
@@ -315,7 +333,6 @@
                 }
             }
 
-            // Save order button click event
             $('#saveOrderBtn').on('click', function() {
                 const orderItems = [];
                 let totalItemsCount = 0;
