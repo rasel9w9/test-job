@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Pagination\Paginator;
 class HomeController extends Controller
 {
     public function __construct()
@@ -24,7 +25,8 @@ class HomeController extends Controller
         $data = $request->all();
         if($request->image){
             $extension = $request->file("image")->getClientOriginalExtension();
-            $imageName = $request->file("image")->storeAs('product_images',time().".$extension");
+            $imageName = $request->file("image")->storeAs('public/product_images',time().".$extension");
+            $imageName = str_replace("public/","",$imageName);
         }else{
             $imageName = null;
         }
@@ -51,7 +53,9 @@ class HomeController extends Controller
     }
 
     public function pointOfSale(){
-        return view("pos");
+        $products = Product::with(['variants'])->simplePaginate("4");
+        Paginator::useBootstrap();
+        return view("pos",compact('products'));
     }
 
     public function orderList(){

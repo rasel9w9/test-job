@@ -88,6 +88,9 @@
     .product-price {
         font-weight: bold;
     }
+    .product-details div{
+        font-size:10px;
+    }
     .order-summary-table {
         width: 100%;
         border-collapse: collapse;
@@ -143,19 +146,46 @@
                 <input type="text" class="form-control" id="productSearch" placeholder="Search for products">
             </div>
             <h2 style="margin-bottom: 20px;">Products List</h2>
+            @php
+            @endphp
             <ul class="product-list">
-                <li data-name="Product 1" data-color="Red" data-size="Small" data-price="10.00" data-discount="2.00">
-                    <div class="product-info">
-                        <img src="https://via.placeholder.com/60" alt="Product 1" class="product-image">
-                        <div class="product-details">
-                            <div class="product-name">Product 1 (Red, Small)</div>
-                            <div class="product-price">$10.00</div>
-                            <div class="product-discount">Discount: $2.00</div>
-                        </div>
-                    </div>
-                </li>
-                <!-- Add more products with their variants and prices here -->
+                @foreach($products as $product)
+                    @if($product->variants->count() > 0)
+                        @foreach($product->variants as $productVariant)
+                            <li data-id = "{{$product->id}}" data-variant-id="{{$productVariant->id}}" data-name="{{$product->name}}" data-color="{{$productVariant->color}}" data-size="{{$productVariant->size}}" data-price="{{$productVariant->price}}" data-discount="{{$product->discount}}">
+                                <div class="product-info">
+                                    <img src="{{asset('storage')}}/{{$product->image}}" alt="Product 1" class="product-image">
+                                    <div class="product-details">
+                                        <div class="product-name">{{$product->name}}({{$productVariant->color}}-{{$productVariant->size}})</div>
+                                        <div class="product-price">TK {{$productVariant->price}}</div>
+                                        @if($product->discount > 0)
+                                        <div class="product-discount">Discount: TK {{($product->discount/100)*$productVariant->price}}</div>
+                                        @endif
+                                    </div> 
+                                </div>
+                            </li>
+                        @endforeach
+                    @else
+                        <li data-id = "{{$product->id}}" data-variant-id="" data-name="{{$product->name}}" data-color="" data-size="" data-price="{{$product->selling_price}}" data-discount="{{$product->discount}}">
+                            <div class="product-info">
+                                <img src="{{asset('storage')}}/{{$product->image}}" alt="Product 1" class="product-image">
+                                <div class="product-details">
+                                    <div class="product-name">{{$product->name}}</div>
+                                    <div class="product-price">TK {{$product->selling_price}}</div>
+                                    @if($product->discount > 0)
+                                    <div class="product-discount">
+                                        Discount: TK {{($product->discount/100)*$product->selling_price}}
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </li>
+                    @endif
+                @endforeach
             </ul>
+            <div>
+                {{$products->links()}}
+            </div>
         </div>
     </div>
     <div class="col-lg-4">
