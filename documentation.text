@@ -8,6 +8,7 @@ After Cloning the project from github repository:
 	* run the command "php artisan key:generate";
 	* run the command "php artisan storage:link";
 	* run the command "php artisan optimize";
+	* run the command "php artisan migrate:fresh --seed";
 	* run the command "php artisan serve";
 NOTE: this system is using 'my_views' dir insted of resources/view and 	using my_web.php insted of web.php according to your extra requirements.
 Please Open composer.json file to see which laravel and php version using and may more for this.
