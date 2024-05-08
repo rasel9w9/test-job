@@ -24,5 +24,6 @@ Route::post('/save-product', [App\Http\Controllers\HomeController::class, 'saveP
 
 Route::get('/order-list', [App\Http\Controllers\HomeController::class, 'orderList'])->name('orderList');
 Route::post('/save-order', [App\Http\Controllers\HomeController::class, 'saveOrder'])->name('saveOrder');
+Route::get('/view-order/{id}', [App\Http\Controllers\HomeController::class, 'viewOrder'])->name('viewOrder');
 
 Route::get('/point-of-sale', [App\Http\Controllers\HomeController::class, 'pointOfSale'])->name('pointOfSale');

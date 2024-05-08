@@ -152,31 +152,43 @@
                 @foreach($products as $product)
                     @if($product->variants->count() > 0)
                         @foreach($product->variants as $productVariant)
-                            <li data-id = "{{$product->id}}" data-variant-id="{{$productVariant->id}}" data-name="{{$product->name}}" data-color="{{$productVariant->color}}" data-size="{{$productVariant->size}}" data-price="{{$productVariant->price}}" data-discount="{{$product->discount}}">
+                            @php
+                                $realPrice = $productVariant->price; 
+                                $discountPrice = $realPrice-(($product->discount/100)*$realPrice);
+                            @endphp
+                            <li data-id = "{{$product->id}}" data-variant-id="{{$productVariant->id}}" data-name="{{$product->name}}" data-color="{{$productVariant->color}}" data-size="{{$productVariant->size}}" data-price="{{$discountPrice}}" data-tax="{{$product->tax}}" data-discount="{{$product->discount}}">
                                 <div class="product-info">
                                     <img src="{{asset('storage')}}/{{$product->image}}" alt="Product 1" class="product-image">
                                     <div class="product-details">
-                                        <div class="product-name">{{$product->name}}({{$productVariant->color}}-{{$productVariant->size}})</div>
-                                        <div class="product-price">TK {{$productVariant->price}}</div>
-                                        @if($product->discount > 0)
-                                        <div class="product-discount">Discount: TK {{($product->discount/100)*$productVariant->price}}</div>
-                                        @endif
+                                        <div class="product-name">
+                                            {{$product->name}}({{$productVariant->color}}-{{$productVariant->size}})
+                                        </div>
+                                        <div class="product-price">
+                                            <span>TK {{ceil($discountPrice)}}</span>
+                                            @if($realPrice > $discountPrice) 
+                                                <span style="text-decoration: line-through;">{{$realPrice}}</span>
+                                            @endif
+                                        </div>
                                     </div> 
                                 </div>
                             </li>
                         @endforeach
                     @else
-                        <li data-id = "{{$product->id}}" data-variant-id="" data-name="{{$product->name}}" data-color="" data-size="" data-price="{{$product->selling_price}}" data-discount="{{$product->discount}}">
+                        @php
+                            $realPrice = $product->selling_price; 
+                            $discountPrice = $realPrice-(($product->discount/100)*$realPrice);
+                        @endphp
+                        <li data-id = "{{$product->id}}" data-variant-id="" data-name="{{$product->name}}" data-color="" data-size="" data-price="{{$discountPrice}}" data-tax="{{$product->tax}}" data-discount="{{$product->discount}}">
                             <div class="product-info">
                                 <img src="{{asset('storage')}}/{{$product->image}}" alt="Product 1" class="product-image">
                                 <div class="product-details">
                                     <div class="product-name">{{$product->name}}</div>
-                                    <div class="product-price">TK {{$product->selling_price}}</div>
-                                    @if($product->discount > 0)
-                                    <div class="product-discount">
-                                        Discount: TK {{($product->discount/100)*$product->selling_price}}
+                                    <div class="product-price">
+                                        <span>TK {{ceil($discountPrice)}}</span>
+                                        @if($realPrice > $discountPrice) 
+                                        <span style="text-decoration: line-through;">{{$realPrice}}</span>
+                                        @endif
                                     </div>
-                                    @endif
                                 </div>
                             </div>
                         </li>
@@ -240,29 +252,36 @@
         const tax = $('#tax');
         const total = $('#total');
 
-        let items = {};
+        let items = JSON.parse(sessionStorage.getItem("orderItems"));
+        if(!items){
+            items = {};
+        }
         let taxRate = 0.1; // 10% tax rate
 
         // Add event listeners to each product for ordering
         productList.on('click', function() {
+            const id = $(this).data('id');
+            const variant_id = $(this).data('variant-id');
             const name = $(this).data('name');
             const price = parseFloat($(this).data('price'));
+            const tax = parseFloat($(this).data('tax'));
             const color = $(this).data('color');
             const size = $(this).data('size');
             const discount = parseFloat($(this).data('discount'));
-
             const variantName = `${name} (${color}, ${size})`;
-
             if (!items[variantName]) {
                 items[variantName] = {
+                    id: id,
+                    variant_id: variant_id,
                     price: price,
+                    tax: tax,
                     quantity: 1,
                     discount: discount
                 };
             } else {
                 items[variantName].quantity++;
             }
-
+            sessionStorage.setItem("orderItems",JSON.stringify(items));
             updateOrderSummary();
         });
 
@@ -275,8 +294,10 @@
             orderSummary.empty();
 
             // Calculate totals
+            let items = JSON.parse(sessionStorage.getItem("orderItems"));
+            if(!items){ return false;}
             Object.keys(items).forEach(key => {
-                const { price, quantity, discount } = items[key];
+                const { id, variant_id, price, tax, quantity, discount } = items[key];
                 const total = (price - discount) * quantity;
 
                 subtotalAmount += total;
@@ -285,7 +306,7 @@
                 // Add row to order summary with remove icon and quantity input
                 const row = `
                     <tr>
-                        <td>${key}</td>
+                        <td data-id='${id}' data-variant-id='${variant_id}' data-tax='${tax}'>${key}</td>
                         <td>$${price.toFixed(2)}</td>
                         <td><input type="number" class="quantity-input" value="${quantity}" min="1"></td>
                         <td>$${total.toFixed(2)}</td>
@@ -318,6 +339,7 @@
 
                 if (!isNaN(newQuantity) && newQuantity >= 1) {
                     items[itemName].quantity = newQuantity;
+                    sessionStorage.setItem("orderItems",JSON.stringify(items));
                     updateOrderSummary();
                 } else {
                     $(this).val(items[itemName].quantity);
@@ -329,27 +351,44 @@
         function removeItem(name) {
             if (items[name]) {
                 delete items[name];
+                sessionStorage.setItem("orderItems",JSON.stringify(items));
                 updateOrderSummary();
             }
         }
+
+        $.ajaxSetup({
+           headers: {
+              'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+           }
+        });
 
         $('#saveOrderBtn').on('click', function() {
             const orderItems = [];
             let totalItemsCount = 0;
             let subtotalAmount = 0;
+            let itemTr = $('.order-summary-table tbody tr');
+            if(itemTr.length < 1){
+                alert("Please Select At least One item to Order");return false;
+            }
 
-            // Loop through each row in the order summary table
-            $('.order-summary-table tbody tr').each(function() {
-                const productName = $(this).find('td:eq(0)').text();
+            let isConfirm = confirm("Are You Sure To Place The Order?");
+            if(!isConfirm){return false;}
+
+            itemTr.each(function() {
+                const productId = $(this).find('td:eq(0)').data('id');
+                const productVariantId = $(this).find('td:eq(0)').data('variant-id');
+                const tax = parseFloat($(this).find('td:eq(0)').data('tax'));
                 const quantity = parseInt($(this).find('td:eq(2) input').val());
                 const price = parseFloat($(this).find('td:eq(1)').text().replace('$', ''));
                 const total = parseFloat($(this).find('td:eq(3)').text().replace('$', ''));
 
                 // Add the item details to the orderItems array
                 orderItems.push({
-                    productName: productName,
+                    product_id: productId,
+                    variant_id: productVariantId,
                     quantity: quantity,
                     price: price,
+                    tax: tax,
                     total: total
                 });
 
@@ -357,39 +396,34 @@
                 totalItemsCount += quantity;
                 subtotalAmount += total;
             });
-
             // Calculate tax and total
             const taxRate = 0.1; // Example tax rate
             const taxAmount = subtotalAmount * taxRate;
             const totalAmount = subtotalAmount + taxAmount;
-
-            // Log the orderItems array and other details for demonstration
-            console.log('Order items:', orderItems);
-            console.log('Total Items:', totalItemsCount);
-            console.log('Subtotal:', subtotalAmount.toFixed(2));
-            console.log('Tax:', taxAmount.toFixed(2));
-            console.log('Total:', totalAmount.toFixed(2));
-
-            // Here you can send the orderItems array and other details to your backend server using AJAX
-            // For example:
-            // $.ajax({
-            //     type: 'POST',
-            //     url: 'your-backend-url',
-            //     data: {
-            //         orderItems: orderItems,
-            //         totalItems: totalItemsCount,
-            //         subtotal: subtotalAmount.toFixed(2),
-            //         tax: taxAmount.toFixed(2),
-            //         total: totalAmount.toFixed(2)
-            //     },
-            //     success: function(response) {
-            //         console.log('Order saved successfully!');
-            //     },
-            //     error: function(error) {
-            //         console.error('Error saving order:', error);
-            //     }
-            // });
+            $.ajax({
+                type: 'POST',
+                url: "{{route('saveOrder')}}",
+                data: {
+                    order_items: orderItems,
+                    total_items: totalItemsCount,
+                    subtotal: subtotalAmount.toFixed(2),
+                    tax: taxAmount.toFixed(2),
+                    total: totalAmount.toFixed(2)
+                },
+                success: function(response) {
+                    if(response.success){
+                        alert(response.msg);
+                        items = {};
+                        updateOrderSummary();
+                    }
+                },
+                error: function(error) {
+                    console.error('There is an error,Please Try Again');
+                }
+            });
         });
+
+        updateOrderSummary();
     });
 </script>
 @endsection

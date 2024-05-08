@@ -1,0 +1,14 @@
+After Cloning the project from github repository:
+	firstly create a database in mysql;ex: 'test_job';
+	
+	*Go to project root dir.
+	* run the command "composer update";
+	* copy .env.eample and rename it to .env
+	* open the file and set value to DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME and DB_PASSWORD; 
+	* run the command "php artisan key:generate";
+	* run the command "php artisan storage:link";
+	* run the command "php artisan optimize";
+	* run the command "php artisan serve";
+NOTE: this system is using 'my_views' dir insted of resources/view and 	using my_web.php insted of web.php according to your extra requirements.
+Please Open composer.json file to see which laravel and php version using and may more for this.
+NB:If u face any problem to install it,please contact with me.Phone:01517189226,email:rasel9w9@gmail.com

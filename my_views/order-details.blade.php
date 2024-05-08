@@ -64,6 +64,9 @@
     .order-summary-table th {
         background-color: #f2f2f2;
     }
+    .summary-div p{
+        margin:0px;
+    }
     .footer {
         background-color: #1976D2;
         color: #fff;
@@ -86,43 +89,39 @@
     }
 </style>
 @endsection
-@section("content-header") Order List @endsection
+@section("content-header") Order Details @endsection
 @section('main-content')
 <div class="order-list">
-    <h2 style="margin-bottom: 20px;">Order Summary</h2>
-    <form class="form-inline" method="get">
-      <label for="email">From Date: &nbsp;&nbsp; </label>
-      <input type="date" class="form-control" name="from_date" required value="{{$fromDate}}">
-      <label for="pwd">&nbsp;&nbsp;To Date: &nbsp;&nbsp; </label>
-      <input type="date" class="form-control" name="to_date" required value="{{$toDate}}" >
-      &nbsp;&nbsp;<button type="submit" class="btn btn-primary">Search</button>
-    </form>
-    @if($fromDate and $toDate)
-    <a class="btn btn-sm btn-primary" href="{{route('orderList')}}">Show All</a>
-    @endif
+    <h2 style="margin-bottom: 20px;">Order Items</h2>
+    <div class="summary-div">
+        <p>Order Id: #{{$order->id}}</p>
+        <p>Customer Name: #{{$order->customerInfo->name}}</p>
+        <p>Order Date: #{{$order->order_date}}</p>
+        <p>Total Items: #{{$order->total_items}}</p>
+        <p>Total Amount: TK {{$order->total_amount}}</p>
+    </div>
     <div class="table-responsive">
         <table class="order-summary-table">
             <thead>
                 <tr>
-                    <th>Order ID</th>
-                    <th>Customer Name</th>
-                    <th>Date</th>
-                    <th>Total Items</th>
-                    <th>Total Amount</th>
-                    <th>Action</th>
+                    <th>s#</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
                 </tr>
             </thead>
             <tbody>
-               @foreach($orderList as $order)
+               @foreach($order->items as $item)
                <tr>
-                   <td>#{{$order->id}}</td>
-                   <td>{{$order->customerInfo->name}}</td>
-                   <td>{{$order->order_date}}</td>
-                   <td>{{$order->total_items}}</td>
-                   <td>{{$order->total_amount}}</td>
-                   <td>
-                        <a href="{{route('viewOrder',$order->id)}}">Details</a> 
+                   <td>#{{$loop->iteration}}</td>
+                    <td>
+                        {{$item->product->name}} 
+                        @if($item->variant) ({{$item->variant->color}}, {{$item->variant->size}}) @endif
                     </td>
+                   <td>{{$item->quantity}}</td>
+                   <td>TK {{$item->price}}</td>
+                   <td>TK {{$item->total}}</td>
                </tr>
                @endforeach
             </tbody>
